@@ -111,10 +111,12 @@ fn simple_foo_function_can_be_parsed() {
     let prg = &result.units[0];
     assert_eq!(prg.pou_type, PouType::Function);
     assert_eq!(prg.name, "foo");
+
     assert_eq!(
         prg.return_type.as_ref().unwrap(),
         &DataTypeDeclaration::DataTypeReference {
-            referenced_type: "INT".to_string()
+            referenced_type: "INT".to_string(),
+            location: (15..18).into(),
         }
     );
 }
@@ -521,6 +523,7 @@ fn simple_struct_type_can_be_parsed() {
                         name: "One".to_string(),
                         data_type: DataTypeDeclaration::DataTypeReference {
                             referenced_type: "INT".to_string(),
+                            location: SourceRange::undefined(),
                         },
                         initializer: None,
                         location: SourceRange::undefined(),
@@ -529,6 +532,7 @@ fn simple_struct_type_can_be_parsed() {
                         name: "Two".to_string(),
                         data_type: DataTypeDeclaration::DataTypeReference {
                             referenced_type: "INT".to_string(),
+                            location: SourceRange::undefined(),
                         },
                         initializer: None,
                         location: SourceRange::undefined(),
@@ -537,6 +541,7 @@ fn simple_struct_type_can_be_parsed() {
                         name: "Three".to_string(),
                         data_type: DataTypeDeclaration::DataTypeReference {
                             referenced_type: "INT".to_string(),
+                            location: SourceRange::undefined(),
                         },
                         initializer: None,
                         location: SourceRange::undefined(),
@@ -674,6 +679,7 @@ fn array_type_can_be_parsed_test() {
                 },
                 referenced_type: Box::new(DataTypeDeclaration::DataTypeReference {
                     referenced_type: "INT".to_string(),
+                    location: SourceRange::undefined(),
                 }),
             },
             initializer: None,
@@ -900,6 +906,7 @@ fn inline_enum_declaration_can_be_parsed() {
                 name: None,
                 elements: vec!["red".to_string(), "yellow".to_string(), "green".to_string()],
             },
+            location: SourceRange::undefined(),
         },
         initializer: None,
         location: SourceRange::undefined(),
@@ -1475,6 +1482,7 @@ fn subrangetype_can_be_parsed() {
                 }),
                 referenced_type: "UINT".to_string(),
             },
+            location: SourceRange::undefined(),
         },
         initializer: None,
         location: (0..0).into(),
@@ -1507,6 +1515,7 @@ fn varargs_parameters_can_be_parsed() {
         pou_type: PouType::Function,
         return_type: Some(DataTypeDeclaration::DataTypeReference {
             referenced_type: "DINT".into(),
+            location: SourceRange::undefined(),
         }),
         variable_blocks: vec![VariableBlock {
             variable_block_type: VariableBlockType::Input,
@@ -1517,6 +1526,7 @@ fn varargs_parameters_can_be_parsed() {
                         data_type: DataType::VarArgs {
                             referenced_type: None,
                         },
+                        location: SourceRange::undefined(),
                     },
                     initializer: None,
                     location: SourceRange::undefined(),
@@ -1528,9 +1538,11 @@ fn varargs_parameters_can_be_parsed() {
                             referenced_type: Some(Box::new(
                                 DataTypeDeclaration::DataTypeReference {
                                     referenced_type: "INT".into(),
+                                    location: SourceRange::undefined(),
                                 },
                             )),
                         },
+                        location: SourceRange::undefined(),
                     },
                     initializer: None,
                     location: SourceRange::undefined(),

@@ -64,6 +64,7 @@ pub fn visit_pou(index: &mut Index, pou: &Pou) {
         for var in &block.variables {
             if let DataTypeDeclaration::DataTypeDefinition {
                 data_type: ast::DataType::VarArgs { referenced_type },
+                ..
             } = &var.data_type
             {
                 let name = referenced_type
@@ -203,7 +204,7 @@ fn visit_data_type(index: &mut Index, type_declatation: &UserTypeDeclaration) {
                 information,
             );
             for (count, var) in variables.iter().enumerate() {
-                if let DataTypeDeclaration::DataTypeDefinition { data_type } = &var.data_type {
+                if let DataTypeDeclaration::DataTypeDefinition { data_type, .. } = &var.data_type {
                     //first we need to handle the inner type
                     visit_data_type(
                         index,

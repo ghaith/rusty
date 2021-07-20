@@ -31,6 +31,7 @@ use inkwell::targets::{
     CodeModel, FileType, InitializationConfig, RelocMode, Target, TargetMachine, TargetTriple,
 };
 use parser::ParsedAst;
+use validation::Validator;
 
 use crate::ast::CompilationUnit;
 mod ast;
@@ -41,13 +42,29 @@ pub mod index;
 mod lexer;
 mod parser;
 mod typesystem;
+mod validation;
 
 #[macro_use]
 extern crate pretty_assertions;
 
 #[derive(PartialEq, Debug, Clone)]
+pub enum Severity {
+    Error,
+    Warning,
+    Info,
+}
+
+#[derive(PartialEq, Debug, Clone)]
 pub enum Diagnostic {
-    SyntaxError { message: String, range: SourceRange },
+    SyntaxError {
+        message: String,
+        range: SourceRange,
+    },
+    SemanticError {
+        message: String,
+        range: SourceRange,
+        severity: Severity,
+    },
 }
 
 impl Diagnostic {
@@ -89,12 +106,14 @@ impl Diagnostic {
     pub fn get_message(&self) -> &str {
         match self {
             Diagnostic::SyntaxError { message, .. } => message.as_str(),
+            Diagnostic::SemanticError { message, .. } => message.as_str(),
         }
     }
 
     pub fn get_location(&self) -> SourceRange {
         match self {
             Diagnostic::SyntaxError { range, .. } => range.clone(),
+            Diagnostic::SemanticError { range, .. } => range.clone(),
         }
     }
 }
@@ -274,8 +293,14 @@ pub fn compile_module<'c>(
         let (mut parse_result, diagnostics) = parse(e.source.as_str())?;
         ast::pre_process(&mut parse_result);
         full_index.import(index::visitor::visit(&parse_result));
-        unit.import(parse_result);
 
+        let mut validator = Validator::new(&full_index);
+        validator.visit_unit(&parse_result);
+        let syntactic_diagnostics = diagnostics.into_iter();
+        let semantic_diagnostics = validator.diagnostic.into_iter();
+
+        let diagnostics = syntactic_diagnostics.chain(semantic_diagnostics);
+        unit.import(parse_result);
         //log errors
         let file_id = files.add(e.path.clone(), e.source.clone());
         for error in diagnostics {

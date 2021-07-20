@@ -2,7 +2,9 @@
 use crate::compile_error::CompileError;
 use std::{
     fmt::{Debug, Display, Formatter, Result},
-    iter, result, unimplemented,
+    iter,
+    ops::Range,
+    result, unimplemented,
 };
 mod pre_processor;
 
@@ -152,6 +154,7 @@ impl Variable {
     ) -> DataTypeDeclaration {
         let new_data_type = DataTypeDeclaration::DataTypeReference {
             referenced_type: type_name,
+            location: self.data_type.get_location(),
         };
         std::mem::replace(&mut self.data_type, new_data_type)
     }
@@ -182,6 +185,10 @@ impl SourceRange {
     pub fn sub_range(&self, start: usize, len: usize) -> SourceRange {
         SourceRange::new((self.get_start() + start)..(self.get_start() + len))
     }
+
+    pub fn to_range(&self) -> Range<usize> {
+        self.range.clone()
+    }
 }
 
 impl From<std::ops::Range<usize>> for SourceRange {
@@ -190,19 +197,49 @@ impl From<std::ops::Range<usize>> for SourceRange {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum DataTypeDeclaration {
-    DataTypeReference { referenced_type: String },
-    DataTypeDefinition { data_type: DataType },
+    DataTypeReference {
+        referenced_type: String,
+        location: SourceRange,
+    },
+    DataTypeDefinition {
+        data_type: DataType,
+        location: SourceRange,
+    },
+}
+
+impl Debug for DataTypeDeclaration {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        match self {
+            DataTypeDeclaration::DataTypeReference {
+                referenced_type, ..
+            } => f
+                .debug_struct("DataTypeReference")
+                .field("referenced_type", referenced_type)
+                .finish(),
+            DataTypeDeclaration::DataTypeDefinition { data_type, .. } => f
+                .debug_struct("DataTypeDefinition")
+                .field("data_type", data_type)
+                .finish(),
+        }
+    }
 }
 
 impl DataTypeDeclaration {
     pub fn get_name(&self) -> Option<&str> {
         match self {
-            DataTypeDeclaration::DataTypeReference { referenced_type } => {
-                Some(referenced_type.as_str())
-            }
-            DataTypeDeclaration::DataTypeDefinition { data_type } => data_type.get_name(),
+            DataTypeDeclaration::DataTypeReference {
+                referenced_type, ..
+            } => Some(referenced_type.as_str()),
+            DataTypeDeclaration::DataTypeDefinition { data_type, .. } => data_type.get_name(),
+        }
+    }
+
+    pub fn get_location(&self) -> SourceRange {
+        match self {
+            DataTypeDeclaration::DataTypeReference { location, .. } => location.clone(),
+            DataTypeDeclaration::DataTypeDefinition { location, .. } => location.clone(),
         }
     }
 }
@@ -331,6 +368,7 @@ impl DataType {
             }
             let new_data_type = DataTypeDeclaration::DataTypeReference {
                 referenced_type: type_name,
+                location: SourceRange::undefined(), //TODO
             };
             let old_data_type = std::mem::replace(referenced_type, Box::new(new_data_type));
             Some(*old_data_type)

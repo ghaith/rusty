@@ -260,6 +260,7 @@ fn invalid_variable_name_error_recovery() {
                     name: "c".into(),
                     data_type: DataTypeDeclaration::DataTypeReference {
                         referenced_type: "INT".into(),
+                        location: SourceRange::undefined(),
                     },
                     initializer: None,
                     location: SourceRange::undefined(),

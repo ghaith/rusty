@@ -241,6 +241,7 @@ fn unclosed_var_container() {
                     name: "a".into(),
                     data_type: crate::ast::DataTypeDeclaration::DataTypeReference {
                         referenced_type: "INT".into(),
+                        location: SourceRange::undefined(),
                     },
                     initializer: None,
                     location: SourceRange::undefined(),

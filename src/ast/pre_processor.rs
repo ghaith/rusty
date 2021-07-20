@@ -53,6 +53,7 @@ fn should_generate_implicit_type(variable: &Variable) -> bool {
         DataTypeDeclaration::DataTypeReference { .. } => false,
         DataTypeDeclaration::DataTypeDefinition {
             data_type: DataType::VarArgs { .. },
+            ..
         } => false,
         DataTypeDeclaration::DataTypeDefinition { .. } => true,
     }
@@ -64,7 +65,7 @@ fn pre_process_variable_data_type(
     types: &mut Vec<UserTypeDeclaration>,
 ) {
     let new_type_name = format!("__{}_{}", container_name, variable.name);
-    if let DataTypeDeclaration::DataTypeDefinition { mut data_type } =
+    if let DataTypeDeclaration::DataTypeDefinition { mut data_type, .. } =
         variable.replace_data_type_with_reference_to(new_type_name.clone())
     {
         // create index entry
@@ -84,7 +85,7 @@ fn add_nested_datatypes(
     types: &mut Vec<UserTypeDeclaration>,
 ) {
     let new_type_name = format!("{}_", container_name);
-    if let Some(DataTypeDeclaration::DataTypeDefinition { mut data_type }) =
+    if let Some(DataTypeDeclaration::DataTypeDefinition { mut data_type, .. }) =
         datatype.replace_data_type_with_reference_to(new_type_name.clone())
     {
         data_type.set_name(new_type_name.clone());
