@@ -7,7 +7,7 @@
 //! ## Standard language support
 //! Most of the [`IEC61131-3`] standard for ST and general programing is supported.
 //! ## Native compilation
-//! A (currently) single ST files into object code using LLVM.
+//! ST files into object code using LLVM.
 //! A compiled object can be linked statically or dynamically linked
 //!     with other programs using standard compiler linkers (ld, clang, gcc)
 //! ## IR Output
@@ -37,6 +37,7 @@ mod ast;
 pub mod cli;
 mod codegen;
 pub mod compile_error;
+mod compiler_driver;
 pub mod index;
 mod lexer;
 mod parser;
